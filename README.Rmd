@@ -18,6 +18,9 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
+
+This is a dead end, the WFS server stuff is bs by the looks. 
+
 The goal of thelist is to read data from the Tasmania TheLIST service, for local authority data layers. 
 
 ## Installation
@@ -31,15 +34,25 @@ remotes::install_github("mdsumner/thelist")
 ## Example
 
 This is a basic example which shows how to find the matching cadastral parcel for a given address in the state of Tasmania, without downloading the data layers or reading every data element. 
-
+se
 ```{r example}
 library(thelist)
 library(lazysf)
 
 address <- lazysf(thelist_wfs(), thelist_layer("address"))
 library(dplyr)
-pid <- address %>% dplyr::filter(ST_NO_FROM == 177, STREET == "LIVERPOOL") %>%
-  select(ST_NO_FROM, STREET, PID) %>% collect()
+pid <- address %>% dplyr::filter(ST_NO_FROM == 349, STREET == "ELIZABETH") %>%
+  select(ST_NO_FROM, STREET, PID, everything()) %>% collect()
+
+
+cadastre <- lazysf(thelist_wfs(), thelist_layer("cadastral")) %>% 
+  dplyr::filter(PID == !!pid$PID) %>% select(SHAPE) %>% mutate(SHAPE = sql('CAST(SHAPE AS geometry( "GEOMETRYCOLLECTION"))  '))
+
+
+
+pull(cadastre)
+
+
 ```
 
 See that there are many layers to choose from. 
@@ -55,7 +68,7 @@ And we can find one of these, by pattern or at random.
 thelist_layer(random = TRUE)
 ```
 
-We can just read direct with sf. 
+We can just read direct with sf. It's pretty slow though, not sf's fault ... still exploring.  
 
 ```{r}
 library(sf)
