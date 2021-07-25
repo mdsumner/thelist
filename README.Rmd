@@ -1,0 +1,64 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# thelist
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of thelist is to read data from the Tasmania TheLIST service, for local authority data layers. 
+
+## Installation
+
+You can install thelist from github with
+
+``` r
+remotes::install_github("mdsumner/thelist")
+```
+
+## Example
+
+This is a basic example which shows how to find the matching cadastral parcel for a given address in the state of Tasmania, without downloading the data layers or reading every data element. 
+
+```{r example}
+library(thelist)
+library(lazysf)
+
+address <- lazysf(thelist_wfs(), thelist_layer("address"))
+library(dplyr)
+pid <- address %>% dplyr::filter(ST_NO_FROM == 177, STREET == "LIVERPOOL") %>%
+  select(ST_NO_FROM, STREET, PID) %>% collect()
+```
+
+See that there are many layers to choose from. 
+
+```{r layers}
+writeLines(list_layers)
+```
+
+And we can find one of these, by pattern or at random. 
+
+```{r chooselayer}
+(lga_layer <- thelist_layer("government_areas"))
+thelist_layer(random = TRUE)
+```
+
+We can just read direct with sf. 
+
+```{r}
+library(sf)
+lga <- read_sf(thelist_wfs(), lga_layer)
+
+```
